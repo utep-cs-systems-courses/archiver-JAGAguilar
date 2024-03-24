@@ -52,20 +52,29 @@ def extractArch(archName):
     while read != "":
         fNameSize = ""
         fSize = ""
-        while read != ":":
+        while read != "":
             fNameSize = fNameSize + read
             read = os.read(readableArch, 1).decode()
         fName = os.read(inputFile, int(fNameSize)).decode()
         outFile = os.open(fName, os.O_WRONLY | os.O_CREAT)
         read = os.read(readableArch, 1).decode()
-        while read != ":":
+        while read != "":
             fSize = fSize + read
             read = os.read(readableArch, 1).decode()
         os.write(outFile, os.read(readableArch, int(fSize)))
         read = os.read(readableArch, 1).decode()
         os.close(outFile)
     os.close(readableArch)
+'''
+def ibArchive(archName, archList):
+    arch_fd = os.open(archName, os.O_WRONLY | os.O_CREAT)
+    writer = BufferedFdWriter(arch_fd)
+    for fName in archList:
+   '''     
+        
+    
 
+    
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         errorMsg = "Missing Arguments. Input format: tar [command] [create/read file] [optional: archiveable file]\n"
