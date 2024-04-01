@@ -81,7 +81,7 @@ def extractArch(archName):
 def ibArchive(archName, archList):
     arch_fd = os.open(archName, os.O_WRONLY | os.O_CREAT)
     writer = BufferedFdWriter(arch_fd)
-    terminator = b':::'
+    terminator = b'\\'
 
     
     for fName in archList:
@@ -103,9 +103,12 @@ def ibArchive(archName, archList):
     writer.close()
 
 def ibExtract(archName):
+    #NOT WORKING
     arch_fd = os.open(archName, os.O_RDONLY)
     reader = BufferedFdReader(arch_fd)
-    terminator = b':'
+    terminator = b'\\'
+
+    #working separation of fileheader for first file
     while True:
         fileHeader = bytearray(32)
         for i in range(len(fileHeader)):
@@ -113,23 +116,24 @@ def ibExtract(archName):
             if bt is None:
                 break
             fileHeader[i] = bt
+        print(fileHeader) #debugging help
         fileName = fileHeader.decode().strip('\x00')
         if not fileName:
+            print("Here 2")
             break
         curFile = os.open(fileName, os.O_WRONLY | os.O_CREAT)
         writer = BufferedFdWriter(curFile)
         bt = reader.readByte()
         while bt is not None:
             if bytes([bt]) == terminator:
-                if reader.peekByte() == terminator:
-                    if reader.peekByte(2) == terminator:
-                        break
+                break
             writer.writeByte(bt)
             bt = reader.readByte()
         writer.close()
         if bt is None:
             break
     reader.close()
+            
 
 
 
