@@ -89,15 +89,13 @@ def ibArchive(archName, archList):
         fileHeader = bytearray(32)
         for i in range(len(fName)):
             fileHeader[i] = fName[i].encode()[0]
-
-        print(fileHeader)    
+   
         content = []
         reader = BufferedFdReader(curFile)
         bt = reader.readByte()
         while bt is not None:
             content.append(bt)
             bt = reader.readByte()
-        print(bytearray(content))
         toWrite = fileHeader + bytearray(content) + terminator
         for i in toWrite:
             writer.writeByte(i)
