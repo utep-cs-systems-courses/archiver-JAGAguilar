@@ -15,6 +15,12 @@ class BufferedFdReader:
             retval = self.buf[self.index]
             self.index += 1
             return retval
+    def peekByte(self, ahead=1):
+        peekIndex = self.index + ahead
+        if peekIndex < len(self.buf):
+            return self.buf[peekIndex]
+        else:
+            return None
     def close(self):
         os.close(self.fd)
 
