@@ -114,7 +114,8 @@ def ibExtract(archName):
             if bt is None:
                 break
             fileHeader[i] = bt
-        fileName = fileHeader.decode('latin-1').replace('\x00', '')
+        #print(type(fileHeader))
+        fileName = fileHeader.decode().strip('\x00')
         if not fileName:
             break
         curFile = os.open(fileName, os.O_WRONLY | os.O_CREAT)
