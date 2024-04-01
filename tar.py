@@ -81,7 +81,7 @@ def extractArch(archName):
 def ibArchive(archName, archList):
     arch_fd = os.open(archName, os.O_WRONLY | os.O_CREAT)
     writer = BufferedFdWriter(arch_fd)
-    terminator = b':::'
+    terminator = b'\x01'
 
     
     for fName in archList:
@@ -90,7 +90,7 @@ def ibArchive(archName, archList):
         for i in range(len(fName)):
             fileHeader[i+12] = fName[i].encode()[0]
 
-            
+        print(fileHeader)    
         content = []
         reader = BufferedFdReader(curFile)
         bt = reader.readByte()
@@ -106,8 +106,7 @@ def ibArchive(archName, archList):
 def ibExtract(archName):
     arch_fd = os.open(archName, os.O_RDONLY)
     reader = BufferedFdReader(arch_fd)
-    terminator = b':::'
-
+    terminator = b'\x01'
     while True:
         fileHeader = bytearray(32)
         for i in range(len(fileHeader)):
@@ -115,22 +114,24 @@ def ibExtract(archName):
             if bt is None:
                 break
             fileHeader[i] = bt
-        fileName = fileHeader.decode().strip('\x00')
+        fileName = fileHeader.decode('latin-1').replace('\x00', '')
         if not fileName:
             break
         curFile = os.open(fileName, os.O_WRONLY | os.O_CREAT)
         writer = BufferedFdWriter(curFile)
-        while True:
-            bt = reader.readByte()
-            if bt is None or bt == terminator:
+        bt = reader.readByte()
+        while bt is not None:
+            if bytes([bt]) == terminator:
                 break
             writer.writeByte(bt)
-        if bt == terminator:
-            os.close(curFile)
-            continue
+            bt = reader.readByte()
         writer.close()
+        if bt is None:
+            break
     reader.close()
-    
+
+
+
 
     
 if __name__ == "__main__":
