@@ -81,14 +81,14 @@ def extractArch(archName):
 def ibArchive(archName, archList):
     arch_fd = os.open(archName, os.O_WRONLY | os.O_CREAT)
     writer = BufferedFdWriter(arch_fd)
-    terminator = b'\x01'
+    terminator = b':::'
 
     
     for fName in archList:
         curFile = os.open(fName, os.O_RDONLY)
         fileHeader = bytearray(32)
         for i in range(len(fName)):
-            fileHeader[i+12] = fName[i].encode()[0]
+            fileHeader[i] = fName[i].encode()[0]
 
         print(fileHeader)    
         content = []
@@ -97,6 +97,7 @@ def ibArchive(archName, archList):
         while bt is not None:
             content.append(bt)
             bt = reader.readByte()
+        print(bytearray(content))
         toWrite = fileHeader + bytearray(content) + terminator
         for i in toWrite:
             writer.writeByte(i)
@@ -106,7 +107,7 @@ def ibArchive(archName, archList):
 def ibExtract(archName):
     arch_fd = os.open(archName, os.O_RDONLY)
     reader = BufferedFdReader(arch_fd)
-    terminator = b'\x01'
+    terminator = b':'
     while True:
         fileHeader = bytearray(32)
         for i in range(len(fileHeader)):
@@ -114,7 +115,6 @@ def ibExtract(archName):
             if bt is None:
                 break
             fileHeader[i] = bt
-        #print(type(fileHeader))
         fileName = fileHeader.decode().strip('\x00')
         if not fileName:
             break
@@ -123,7 +123,9 @@ def ibExtract(archName):
         bt = reader.readByte()
         while bt is not None:
             if bytes([bt]) == terminator:
-                break
+                if reader.peekByte() == terminator:
+                    if reader.peekByte(2) == terminator:
+                        break
             writer.writeByte(bt)
             bt = reader.readByte()
         writer.close()
